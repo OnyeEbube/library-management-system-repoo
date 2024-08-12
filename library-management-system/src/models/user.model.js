@@ -5,6 +5,11 @@ const userSchema = new mongoose.Schema({
 	name: String,
 	email: String,
 	password: String,
+	resetToken: String,
+	passwordResetTokenExpiryTime: {
+		type: Date,
+		default: () => Date.now() + 900000,
+	},
 	role: { type: String, enum: ["ADMIN", "USER"] },
 });
 

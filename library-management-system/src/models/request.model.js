@@ -22,7 +22,7 @@ const RequestSchema = mongoose.Schema(
 
 		status: {
 			type: String,
-			enum: ["Pending", "Approved", "Rejected"],
+			enum: ["Pending", "Approved", "Declined", "Returned"],
 			default: "Pending",
 		},
 
