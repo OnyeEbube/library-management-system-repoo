@@ -3,8 +3,18 @@ const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
 	name: String,
+	uniqueId: {
+		type: String,
+		required: true,
+		unique: true, // Ensure the uniqueId field is unique in the database
+		index: true, // Create an index for the uniqueId field for faster querying
+	},
 	email: String,
 	password: String,
+	image: {
+		type: String,
+		required: false,
+	},
 	resetToken: String,
 	passwordResetTokenExpiryTime: {
 		type: Date,

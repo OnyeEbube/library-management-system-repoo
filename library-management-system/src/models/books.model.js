@@ -12,7 +12,7 @@ const BookSchema = mongoose.Schema(
 			required: [true, "Please enter author's name"],
 		},
 
-		description: {
+		synopsis: {
 			type: String,
 			required: false,
 		},
@@ -23,11 +23,12 @@ const BookSchema = mongoose.Schema(
 			default: 0,
 		},
 
-		price: {
+		/*price: {
 			type: Number,
 			required: true,
 			default: 0,
 		},
+		*/
 
 		image: {
 			type: String,
@@ -43,6 +44,7 @@ const BookSchema = mongoose.Schema(
 		timestamps: true,
 	}
 );
+BookSchema.index({ title: "text", author: "text", synopsis: "text" });
 
 const Book = mongoose.model("Book", BookSchema);
 

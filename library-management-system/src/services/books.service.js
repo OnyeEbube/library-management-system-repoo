@@ -8,8 +8,15 @@ BookService.findOne = async (filter) => {
 	return await Book.findOne(filter);
 };
 
-BookService.findAll = async () => {
-	return await Book.find();
+BookService.countBooks = async () => {
+	return await Book.countDocuments();
+};
+BookService.findAll = async (limit, skip) => {
+	return await Book.find().limit(limit).skip(skip);
+};
+
+BookService.uploadBookCover = async (id, image) => {
+	return await Book.findByIdAndUpdate(id, { image }, { new: true });
 };
 
 BookService.findById = async (id) => {
@@ -22,6 +29,10 @@ BookService.createBook = async (data) => {
 
 BookService.updateBook = async (id, data) => {
 	return await Book.findOneAndUpdate({ _id: id }, data, { new: true });
+};
+
+BookService.searchBook = async (query) => {
+	return await Book.find({ $text: { $search: query } });
 };
 
 BookService.deleteBook = async (id) => {

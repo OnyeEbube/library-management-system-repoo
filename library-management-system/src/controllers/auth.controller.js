@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const path = require("path");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { UserService } = require("../services/auth.service");
@@ -14,7 +15,11 @@ const AuthController = {};
 
 AuthController.createUser = async (req, res) => {
 	try {
-		const { name, email, password, role } = req.body;
+		const uniqueId = generateUniqueId();
+		const { name, email, password, role, image } = req.body;
+		if (!image) {
+			image = "/uploads/default.jpg";
+		}
 		const existingUser = await UserService.getUser({ email });
 		if (existingUser) {
 			return res.status(400).json({ error: "User already exists" });
@@ -24,7 +29,9 @@ AuthController.createUser = async (req, res) => {
 			name,
 			email,
 			password: hashedPassword,
+			image,
 			role,
+			uniqueId,
 		});
 		const token = jwt.sign({ _id: createdUser._id }, process.env.SECRET_KEY, {
 			expiresIn: process.env.SECRET_KEY_EXPIRES_IN,
@@ -81,6 +88,36 @@ AuthController.loginUser = async (req, res) => {
 	}
 };
 
+AuthController.uploadImage = async (req, res) => {
+	try {
+		const { id } = req.params;
+		const user = await UserService.getUserById(id);
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+
+		if (!req.files || req.files.length === 0) {
+			return res.status(400).json({ error: "Please upload an image" });
+		}
+		const imageFile = req.files.imageFile;
+		const uploadPath = path.join(__dirname, "uploads", imageFile.name);
+
+		// Move the file to the "uploads" directory
+		imageFile.mv(uploadPath, async (err) => {
+			if (err) {
+				return res.status(500).json({ error: err.message });
+			}
+		});
+
+		// Save the image path to the database
+		const image = `/uploads/${imageFile.name}`;
+		const uploadedUserImage = await UserService.uploadImage(id, image);
+		res.json(uploadedUserImage);
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+};
+
 AuthController.getUser = async (req, res) => {
 	try {
 		console.log(req.user);
@@ -97,8 +134,24 @@ AuthController.getUser = async (req, res) => {
 
 AuthController.getUsers = async (req, res) => {
 	try {
-		const users = await UserService.getUsers();
-		res.json(users);
+		const limit = req.query.limit || 5;
+		const page = req.query.page || 1;
+		const skip = (page - 1) * limit;
+		const users = await UserService.getUsers(limit, skip);
+		const totalUsers = await UserService.countUsers(); // count total books
+		const totalPages = Math.ceil(totalUsers / limit);
+		if (!users) {
+			res.status(404).json({ error: "No users have been added" });
+		}
+		res.status(200).json({
+			users,
+			pagination: {
+				totalUsers,
+				totalPages,
+				currentPage: page,
+				limit,
+			},
+		});
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
@@ -130,20 +183,6 @@ AuthController.deleteUser = async (req, res) => {
 	}
 };
 
-/*
-AuthController.forgotPassword = async (req, res, next) => {
-	const { email } = req.body;
-	const user = await UserService.findOne(email);
-	if (!user) {
-		res.status(400).json({error: "This user does not exist"})
-		next()
-	}
-	const resetToken = crypto.randomBytes(16).toString('hex');
-	crypto.createHash("sha256").update(resetToken).digest('hex');
-};
-
-AuthController.resetPassword = async (req, res, next) => {};
-*/
 AuthController.forgotPassword = async (req, res, next) => {
 	const { email } = req.body;
 	const user = await UserService.getUser({ email });
@@ -221,5 +260,21 @@ const sendEmail = async (email, message, subject = "Hello") => {
 
 	console.log(`Message sent: ${info.messageId}`);
 };
+
+let currentPrefixIndex = 0; // Initialize the prefix index
+
+// Function to get the next prefix letter
+function getNextPrefix() {
+	const prefix = String.fromCharCode(65 + currentPrefixIndex); // A=65 in ASCII
+	currentPrefixIndex = (currentPrefixIndex + 1) % 26; // Cycle through A-Z
+	return prefix;
+}
+
+// Function to generate a unique ID
+function generateUniqueId() {
+	const prefix = getNextPrefix();
+	const digits = Math.floor(1000000000 + Math.random() * 9000000000); // Generate a random 10-digit number
+	return prefix + digits;
+}
 
 module.exports = { AuthController };

@@ -10,8 +10,12 @@ UserService.getUserById = async (id) => {
 	return await User.findById({ _id: id }).select("-password");
 };
 
-UserService.getUsers = async () => {
-	return await User.find();
+UserService.countUsers = async () => {
+	return await User.countDocuments();
+};
+
+UserService.getUsers = async (limit, skip) => {
+	return await User.find().limit(limit).skip(skip).select("-password");
 };
 
 UserService.createUser = async (data) => {
@@ -21,6 +25,12 @@ UserService.createUser = async (data) => {
 
 UserService.updateUser = async (id, data) => {
 	return await User.findByIdAndUpdate(id, data, { new: true }).select(
+		"-password"
+	);
+};
+
+UserService.uploadImage = async (id, image) => {
+	return await User.findByIdAndUpdate(id, { image }, { new: true }).select(
 		"-password"
 	);
 };

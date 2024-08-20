@@ -15,6 +15,16 @@ const RequestSchema = mongoose.Schema(
 			required: true,
 		},
 
+		userName: {
+			type: String,
+			required: true,
+		},
+
+		bookName: {
+			type: String,
+			required: true,
+		},
+
 		bookId: {
 			type: String,
 			required: true,
