@@ -118,6 +118,19 @@ AuthController.uploadImage = async (req, res) => {
 	}
 };
 
+AuthController.searchMembers = async (req, res) => {
+	try {
+		const query = req.query.q;
+		const users = await UserService.searchMembers(query);
+		if (!users) {
+			return res.status(404).json({ error: "No user found" });
+		}
+		res.status(200).json(users);
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+};
+
 AuthController.getUser = async (req, res) => {
 	try {
 		console.log(req.user);

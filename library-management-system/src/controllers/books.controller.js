@@ -100,7 +100,7 @@ BookController.updateBook = async (req, res) => {
 	}
 };
 
-BookController.searchBook = async (req, res) => {
+BookController.searchBooks = async (req, res) => {
 	try {
 		const query = req.query.q;
 		const books = await BookService.searchBook(query);

@@ -15,5 +15,6 @@ router.patch("/:id", AuthController.updateUser);
 //router.get("/logout", AuthController.logoutUser);
 //router.get("/uploads/:fileName", AuthController.getProfilePicture);
 router.post("/uploads/:id", verifyUser, AuthController.uploadImage);
+router.get("/search", AuthController.searchMembers);
 
 module.exports = router;

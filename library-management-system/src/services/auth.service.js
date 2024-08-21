@@ -18,6 +18,10 @@ UserService.getUsers = async (limit, skip) => {
 	return await User.find().limit(limit).skip(skip).select("-password");
 };
 
+UserService.searchMembers = async (query) => {
+	return await User.find({ $text: { $search: query } }).select("-password");
+};
+
 UserService.createUser = async (data) => {
 	const user = new User(data);
 	return await user.save();

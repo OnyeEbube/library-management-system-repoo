@@ -9,6 +9,8 @@ const {
 
 //get all books
 router.get("/", userAuth, BookController.getBooks);
+//search for a book
+router.get("/search", userAuth, BookController.searchBooks);
 //get a book
 router.get("/:id", userAuth, BookController.getBook);
 //create a book

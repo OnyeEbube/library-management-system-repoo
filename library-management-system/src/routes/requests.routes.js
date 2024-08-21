@@ -8,7 +8,9 @@ router.get("/", adminAuth, RequestController.getRequests);
 //get a request
 router.get("/:id", adminAuth, RequestController.getRequest);
 //create a request
-router.post("/", userAuth, RequestController.createRequest);
+router.post("/:bookId", userAuth, RequestController.createRequest);
+//approve a request
+router.post("/:id/approve", adminAuth, RequestController.handleRequestAction);
 //update a request
 router.put("/:id", adminAuth, RequestController.updateRequest);
 //delete a request

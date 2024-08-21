@@ -6,8 +6,12 @@ RequestService.findOne = async (filter) => {
 	return await Request.findOne(filter);
 };
 
-RequestService.findAll = async (limit = 5, skip = 0) => {
+RequestService.findAll = async (limit, skip) => {
 	return await Request.find().limit(limit).skip(skip);
+};
+
+RequestService.countRequests = async () => {
+	return await Request.countDocuments();
 };
 
 RequestService.findById = async (id) => {

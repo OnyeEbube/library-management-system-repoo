@@ -7,10 +7,20 @@ RequestController.getRequests = async (req, res) => {
 		const limit = req.query.limit;
 		const skip = req.query.skip;
 		const requests = await RequestService.findAll(limit, skip);
+		const totalRequests = await RequestService.countRequests(); // count total books
+		const totalPages = Math.ceil(totalRequests / limit);
 		if (!requests) {
 			res.status(400).json({ error: "No requests have been added" });
 		}
-		res.status(200).json(requests);
+		res.status(200).json({
+			requests,
+			pagination: {
+				totalRequests,
+				totalPages,
+				currentPage: parseInt(req.query.page),
+				limit,
+			},
+		});
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
@@ -19,11 +29,11 @@ RequestController.getRequests = async (req, res) => {
 RequestController.getRequest = async (req, res) => {
 	try {
 		const { id } = req.params;
-		const requests = await RequestService.findById(id);
-		if (!requests) {
+		const request = await RequestService.findById(id);
+		if (!request) {
 			res.status(400).json({ error: "Request does not exist" });
 		}
-		res.status(200).json(requests);
+		res.status(200).json(request);
 	} catch (error) {
 		res.status(500).json(error);
 	}
@@ -32,10 +42,12 @@ RequestController.getRequest = async (req, res) => {
 RequestController.createRequest = async (req, res) => {
 	try {
 		const { bookId } = req.params;
+		console.log(bookId);
 
 		// Check if the book exists
 		const existingBook = await BookService.findOne({ _id: bookId });
 		if (!existingBook) {
+			//console.log(existingBook);
 			return res.status(400).json({ error: "Book does not exist" });
 		}
 
@@ -53,6 +65,7 @@ RequestController.createRequest = async (req, res) => {
 			...req.body,
 			userId,
 			userName,
+			bookId,
 		};
 		const requests = await RequestService.createRequest(requestPayload);
 
@@ -91,11 +104,11 @@ RequestController.handleRequestAction = async (req, res) => {
 		await bookRequest.save();
 
 		res.status(200).json({
-			message: `Request ${action.toLowerCase()}d successfully`,
+			message: `Request ${status.toLowerCase()} successfully`,
 			bookRequest,
 		});
 	} catch (error) {
-		res.status(500).json({ error: "Server error" });
+		res.status(500).json({ error: error.message });
 	}
 };
 

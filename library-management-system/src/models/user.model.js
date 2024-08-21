@@ -34,5 +34,7 @@ userSchema.pre("save", function (next) {
 	});
 });
 
+userSchema.index({ name: "text", email: "text" });
+
 const User = mongoose.model("User", userSchema);
 module.exports = User;
